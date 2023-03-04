@@ -49,7 +49,7 @@ OpenAI_model_list <- function(simplify = TRUE){
   }
   
   #get model list
-  if(is.null(OpenAI_organization)){
+  if(exists(x = 'OpenAI_organization')){
     model_list <- Auth_OpenAI(key = OpenAI_API_key,organization = OpenAI_organization,return_list = TRUE)
   }else{
     model_list <- Auth_OpenAI(key = OpenAI_API_key,organization = NULL,return_list = TRUE)
