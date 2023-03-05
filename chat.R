@@ -60,7 +60,7 @@ Init_chat_session <- function(global = NULL,
                       frequency_penalty = %f,
                       export_history = FALSE){
   
-  #load repuired library
+  #load required library
   require(httr)
   
   #check role
@@ -74,7 +74,7 @@ Init_chat_session <- function(global = NULL,
   }
   
   #add prompt
-  `%s` <- add_chat_history(.Object = `%s`,role = role,prompt_content = prompt_content)
+  temp_session <- add_chat_history(.Object = `%s`,role = role,prompt_content = prompt_content)
   
   #filter history while processing http POST
   indi <- TRUE
@@ -82,8 +82,8 @@ Init_chat_session <- function(global = NULL,
   
   while(indi){
     #filter chat history
-    `%s` <- filter_chat_history(.Object = `%s`,force = forcement)
-    chat_history <- `%s`@history
+    temp_session <- filter_chat_history(.Object = temp_session,force = forcement)
+    chat_history <- temp_session@history
     
     #create http body
     http_body <- list(`model` = model,
@@ -128,17 +128,22 @@ Init_chat_session <- function(global = NULL,
       stop('requset_content wrong!')
     }
   }
+  
   #process content
   for(i in 1:n){
-    `%s` <<- add_chat_history(.Object = `%s`,
-                              role = requset_content$choices[[i]]$message$role,
-                              prompt_content = gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
+    temp_session <- add_chat_history(.Object = temp_session,
+                                     role = requset_content$choices[[i]]$message$role,
+                                     prompt_content = gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
     cat(paste0('ChatGPT:\\n',gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE),'\\n\\n'))
   }
+  
+  #export to global env
+  `%s` <<- temp_session
+  
 }"
   temp <- sprintf(temp,
                   model,temperature,top_p,n,max_tokens,presence_penalty,frequency_penalty,
-                  session_id,session_id,session_id,session_id,session_id,session_id,session_id,session_id)
+                  session_id,session_id,session_id)
   
   eval(expr = parse(text = temp))
   

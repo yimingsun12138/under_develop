@@ -9,7 +9,7 @@ chat_func <- function(prompt_content,
                       frequency_penalty = %f,
                       export_history = FALSE){
   
-  #load repuired library
+  #load required library
   require(httr)
   
   #check role
@@ -23,7 +23,7 @@ chat_func <- function(prompt_content,
   }
   
   #add prompt
-  `%s` <- add_chat_history(.Object = `%s`,role = role,prompt_content = prompt_content)
+  temp_session <- add_chat_history(.Object = `%s`,role = role,prompt_content = prompt_content)
   
   #filter history while processing http POST
   indi <- TRUE
@@ -31,8 +31,8 @@ chat_func <- function(prompt_content,
   
   while(indi){
     #filter chat history
-    `%s` <- filter_chat_history(.Object = `%s`,force = forcement)
-    chat_history <- `%s`@history
+    temp_session <- filter_chat_history(.Object = temp_session,force = forcement)
+    chat_history <- temp_session@history
     
     #create http body
     http_body <- list(`model` = model,
@@ -77,11 +77,16 @@ chat_func <- function(prompt_content,
       stop('requset_content wrong!')
     }
   }
+  
   #process content
   for(i in 1:n){
-    `%s` <<- add_chat_history(.Object = `%s`,
-                              role = requset_content$choices[[i]]$message$role,
-                              prompt_content = gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
+    temp_session <- add_chat_history(.Object = temp_session,
+                                     role = requset_content$choices[[i]]$message$role,
+                                     prompt_content = gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
     cat(paste0('ChatGPT:\\n',gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE),'\\n\\n'))
   }
+  
+  #export to global env
+  `%s` <<- temp_session
+  
 }
