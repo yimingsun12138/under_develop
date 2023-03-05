@@ -22,43 +22,61 @@ chat_func <- function(prompt_content,
     return(export_chat_history(.Object = `%s`))
   }
   
-  #assign chat session
+  #add prompt
   `%s` <- add_chat_history(.Object = `%s`,role = role,prompt_content = prompt_content)
-  `%s` <- filter_chat_history(.Object = `%s`)
-  chat_history <- `%s`@history
   
-  #create http body
-  http_body <- list(`model` = model,
-                    `temperature` = temperature,
-                    `top_p` = top_p,
-                    `n` = n,
-                    `max_tokens` = max_tokens,
-                    `presence_penalty` = presence_penalty,
-                    `frequency_penalty` = frequency_penalty,
-                    `messages` = chat_history)
+  #filter history while processing http POST
+  indi <- TRUE
+  forcement <- FALSE
   
-  #request
-  if(exists(x = 'OpenAI_organization')){
-    request_POST <- httr::POST(
-      url = URL_chat,
-      httr::add_headers(`Content-Type` = 'application/json'),
-      httr::add_headers(`Authorization` = paste('Bearer',OpenAI_API_key,sep = ' ')),
-      httr::add_headers(`OpenAI-Organization` = OpenAI_organization),
-      body = http_body,
-      encode = 'json'
-    )
-  }else{
-    request_POST <- httr::POST(
-      url = URL_chat,
-      httr::add_headers(`Content-Type` = 'application/json'),
-      httr::add_headers(`Authorization` = paste('Bearer',OpenAI_API_key,sep = ' ')),
-      body = http_body,
-      encode = 'json'
-    )
+  while(indi){
+    #filter chat history
+    `%s` <- filter_chat_history(.Object = `%s`,force = forcement)
+    chat_history <- `%s`@history
+    
+    #create http body
+    http_body <- list(`model` = model,
+                      `temperature` = temperature,
+                      `top_p` = top_p,
+                      `n` = n,
+                      `max_tokens` = max_tokens,
+                      `presence_penalty` = presence_penalty,
+                      `frequency_penalty` = frequency_penalty,
+                      `messages` = chat_history)
+    
+    #request
+    if(exists(x = 'OpenAI_organization')){
+      request_POST <- httr::POST(
+        url = URL_chat,
+        httr::add_headers(`Content-Type` = 'application/json'),
+        httr::add_headers(`Authorization` = paste('Bearer',OpenAI_API_key,sep = ' ')),
+        httr::add_headers(`OpenAI-Organization` = OpenAI_organization),
+        body = http_body,
+        encode = 'json'
+      )
+    }else{
+      request_POST <- httr::POST(
+        url = URL_chat,
+        httr::add_headers(`Content-Type` = 'application/json'),
+        httr::add_headers(`Authorization` = paste('Bearer',OpenAI_API_key,sep = ' ')),
+        body = http_body,
+        encode = 'json'
+      )
+    }
+    
+    requset_content <- httr::content(x = request_POST)
+    
+    #length exceeded?
+    if(!(is.null(requset_content$choices))){
+      indi <- FALSE
+      forcement <- FALSE
+    }else if(is.null(requset_content$choices) & requset_content$error$code == 'context_length_exceeded'){
+      indi <- TRUE
+      forcement <- TRUE
+    }else{
+      stop('requset_content wrong!')
+    }
   }
-  
-  requset_content <- httr::content(x = request_POST)
-  
   #process content
   for(i in 1:n){
     `%s` <<- add_chat_history(.Object = `%s`,

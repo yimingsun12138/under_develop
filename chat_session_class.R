@@ -17,13 +17,17 @@ setMethod(f = 'initialize',
           })
 
 #' Filter chat_session history if necessary
-setGeneric(name = 'filter_chat_history',def = function(.Object){standardGeneric(f = 'filter_chat_history')})
+setGeneric(name = 'filter_chat_history',def = function(.Object,force){standardGeneric(f = 'filter_chat_history')})
 
 setMethod(f = 'filter_chat_history',
           signature = signature(.Object = 'chat_session'),
-          definition = function(.Object){
+          definition = function(.Object,force){
             #filter NULL content
             if(.Object@history[[1]]$role == 'system' & is.null(.Object@history[[1]]$content)){
+              .Object@history <- tail(x = .Object@history,n = -1)
+            }
+            #force filter
+            if(force){
               .Object@history <- tail(x = .Object@history,n = -1)
             }
             #return
