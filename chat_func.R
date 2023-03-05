@@ -63,7 +63,7 @@ chat_func <- function(prompt_content,
   for(i in 1:n){
     `%s` <<- add_chat_history(.Object = `%s`,
                               role = requset_content$choices[[i]]$message$role,
-                              prompt_content = gsub(pattern = '^\n\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
-    cat(paste0('ChatGPT:\n',gsub(pattern = '^\n\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE),'\n\n'))
+                              prompt_content = gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
+    cat(paste0('ChatGPT:\\n',gsub(pattern = '^\\n\\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE),'\\n\\n'))
   }
 }
