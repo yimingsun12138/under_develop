@@ -10,9 +10,13 @@ setMethod(f = 'initialize',
             if(!(is.null(global) | class(global) == 'character')){
               stop('system global parameter must be NULL or a string!')
             }
+            
+            #initialize
             .Object@session_id <- session_id
             .Object@history <- list(list(`role` = 'system',`content` = global))
             .Object@archive <- .Object@history
+            
+            #return
             return(.Object)
           })
 
@@ -21,15 +25,18 @@ setGeneric(name = 'filter_chat_history',def = function(.Object,force){standardGe
 
 setMethod(f = 'filter_chat_history',
           signature = signature(.Object = 'chat_session'),
-          definition = function(.Object,force){
+          definition = function(.Object,force = FALSE){
+            
             #filter NULL content
             if(.Object@history[[1]]$role == 'system' & is.null(.Object@history[[1]]$content)){
               .Object@history <- tail(x = .Object@history,n = -1)
             }
+            
             #force filter
             if(force){
               .Object@history <- tail(x = .Object@history,n = -1)
             }
+            
             #return
             return(.Object)
           })
@@ -40,16 +47,20 @@ setGeneric(name = 'add_chat_history',def = function(.Object,role,prompt_content)
 setMethod(f = 'add_chat_history',
           signature = signature(.Object = 'chat_session'),
           definition = function(.Object,role,prompt_content){
+            
             #check parameter
             if(!(role %in% c('system','user','assistant'))){
-              stop('prompt role can only be system, user or assistant!')
+              stop('role can only be system, user or assistant!')
             }
             if(class(prompt_content) != 'character'){
               stop('prompt content can only be a string!')
             }
+            
             #add prompt
             .Object@history <- append(.Object@history,list(list(`role` = role,`content` = prompt_content)))
             .Object@archive <- append(.Object@archive,tail(x = .Object@history,n = 1))
+            
+            #return
             return(.Object)
           })
 
