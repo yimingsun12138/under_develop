@@ -1,55 +1,4 @@
-#' generate chat session id.
-generate_session_id <- function(){
-  
-  #load required package
-  require(uuid)
-  
-  #generate session id
-  indi <- TRUE
-  while(indi){
-    session_id <- paste('session',UUIDgenerate(),sep = ':')
-    temp <- ls(envir = globalenv())
-    if(!(session_id %in% temp)){
-      indi <- FALSE
-    }
-  }
-  
-  #return
-  return(session_id)
-}
-
-#' Initialize chat session
-Init_chat_session <- function(global = NULL,
-                              model = 'gpt-3.5-turbo-0301',
-                              import_histroy = NULL,
-                              temperature = 0.7,
-                              top_p = 1,
-                              n = 1,
-                              max_tokens = 2048,
-                              presence_penalty = 0,
-                              frequency_penalty = 0){
-  
-  #check parameter
-  if(!(is.null(global) | class(global) == 'character')){
-    stop('global parameter must be NULL or a string!')
-  }
-  if(!(model %in% OpenAI_model_list(simplify = TRUE))){
-    stop('model is not supported by OpenAI!')
-  }
-  if(!(is.null(import_histroy) | class(import_histroy) == 'chat_session')){
-    stop('import_histroy must be a chat_session object if you would like to import!')
-  }
-  
-  #Initialize chat_session
-  session_id <- generate_session_id()
-  if(is.null(import_histroy)){
-    assign(x = session_id,value = new('chat_session',session_id = session_id,global = global),envir = .GlobalEnv)
-  }else{
-    assign(x = session_id,value = import_histroy,envir = .GlobalEnv)
-  }
-  
-  #generate chat function
-  temp <- "chat_func <- function(prompt_content,
+chat_func <- function(prompt_content,
                       role = 'user',
                       model = '%s',
                       temperature = %f,
@@ -117,13 +66,4 @@ Init_chat_session <- function(global = NULL,
                               prompt_content = gsub(pattern = '^\n\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE))
     cat(paste0('ChatGPT:\n',gsub(pattern = '^\n\n',replacement = '',x = requset_content$choices[[i]]$message$content,fixed = FALSE),'\n\n'))
   }
-}"
-  temp <- sprintf(temp,
-                  model,temperature,top_p,n,max_tokens,presence_penalty,frequency_penalty,
-                  session_id,session_id,session_id,session_id,session_id,session_id,session_id,session_id)
-  
-  eval(expr = parse(text = temp))
-  
-  #return
-  return(chat_func)
 }

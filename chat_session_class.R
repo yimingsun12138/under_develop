@@ -37,8 +37,8 @@ setMethod(f = 'add_chat_history',
           signature = signature(.Object = 'chat_session'),
           definition = function(.Object,role,prompt_content){
             #check parameter
-            if(!(role %in% c('system','user'))){
-              stop('prompt role can only be system or user!')
+            if(!(role %in% c('system','user','assistant'))){
+              stop('prompt role can only be system, user or assistant!')
             }
             if(class(prompt_content) != 'character'){
               stop('prompt content can only be a string!')
