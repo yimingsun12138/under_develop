@@ -1,5 +1,5 @@
 #' Define chat_session class.
-setClass(Class = 'chat_session',slots = c(session_id = 'character',history = 'list'))
+setClass(Class = 'chat_session',slots = c(session_id = 'character',history = 'list',archive = 'list'))
 
 #' Initialize chat_session class.
 setMethod(f = 'initialize',
@@ -12,6 +12,7 @@ setMethod(f = 'initialize',
             }
             .Object@session_id <- session_id
             .Object@history <- list(list(`role` = 'system',`content` = global))
+            .Object@archive <- .Object@history
             return(.Object)
           })
 
@@ -23,7 +24,7 @@ setMethod(f = 'filter_chat_history',
           definition = function(.Object){
             #filter NULL content
             if(.Object@history[[1]]$role == 'system' & is.null(.Object@history[[1]]$content)){
-              .Object@history <- tail(.Object@history,n = -1)
+              .Object@history <- tail(x = .Object@history,n = -1)
             }
             #return
             return(.Object)
@@ -40,6 +41,7 @@ setMethod(f = 'add_chat_history',
               stop('prompt role can only be system or user!')
             }
             .Object@history <- append(.Object@history,list(list(`role` = role,`content` = prompt_content)))
+            .Object@archive <- append(.Object@archive,tail(x = .Object@history,n = 1))
             return(.Object)
           })
 
