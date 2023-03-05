@@ -25,7 +25,7 @@ setGeneric(name = 'filter_chat_history',def = function(.Object,force){standardGe
 
 setMethod(f = 'filter_chat_history',
           signature = signature(.Object = 'chat_session'),
-          definition = function(.Object,force = FALSE){
+          definition = function(.Object,force){
             
             #filter NULL content
             if(.Object@history[[1]]$role == 'system' & is.null(.Object@history[[1]]$content)){
